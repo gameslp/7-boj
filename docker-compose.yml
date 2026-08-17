@@ -2,7 +2,7 @@
 #
 #   docker compose up -d --build
 #
-# Potem wejdź na http://localhost:3048, a ekipie podaj http://<IP-twojego-maca>:3048.
+# Potem wejdź na http://localhost:3051, a ekipie podaj http://<IP-twojego-maca>:3051.
 
 services:
   settebello:
@@ -11,12 +11,15 @@ services:
     container_name: settebello
     restart: unless-stopped
     ports:
-      - '3048:3048'
+      - '3051:3051'
     environment:
       # PIN sędziego. Zmień przed turniejem: SETTEBELLO_PIN=twoj-pin docker compose up -d
       SETTEBELLO_PIN: ${SETTEBELLO_PIN:-palio}
       # Opcjonalnie: adres, który serwer wypisze w logu jako adres dla ekipy.
       SETTEBELLO_HOST: ${SETTEBELLO_HOST:-}
     volumes:
-      # Baza wyników zostaje na dysku maca, więc przeżywa restart kontenera.
-      - ./data:/data
+      # Nazwany wolumen zachowuje bazę i zapewnia poprawne prawa zapisu w Portainerze.
+      - settebello-data:/data
+
+volumes:
+  settebello-data:

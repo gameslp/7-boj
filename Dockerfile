@@ -5,7 +5,7 @@
 FROM node:24-alpine
 
 ENV NODE_ENV=production \
-    PORT=3048 \
+    PORT=3051 \
     SETTEBELLO_DB=/data/settebello.db
 
 WORKDIR /app
@@ -18,7 +18,7 @@ COPY public ./public
 RUN mkdir -p /data && chown -R node:node /data /app
 USER node
 
-EXPOSE 3048
+EXPOSE 3051
 VOLUME ["/data"]
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \

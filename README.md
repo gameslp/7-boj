@@ -14,11 +14,11 @@ i stół pokerowy. Punkty przeliczają się po każdym meczu, strzale i koszu.
 docker compose up -d --build
 ```
 
-Strona stoi na porcie **3048**. Ty wchodzisz na `http://localhost:3048`, a ekipie
+Strona stoi na porcie **3051**. Ty wchodzisz na `http://localhost:3051`, a ekipie
 podajesz adres twojego maca w lokalnej sieci:
 
 ```bash
-echo "http://$(ipconfig getifaddr en0):3048"
+echo "http://$(ipconfig getifaddr en0):3051"
 ```
 
 Musicie być na tym samym WiFi. Adres zmieni się, jeśli router przydzieli macowi inne
@@ -33,8 +33,9 @@ docker compose logs -f
 docker compose ps
 ```
 
-Wyłączenie: `docker compose down`. Wyniki zostają w `./data`, więc następny start
-podnosi turniej dokładnie tam, gdzie stanął. Żeby mac nie usnął w połowie pokera,
+Wyłączenie: `docker compose down`. Wyniki zostają w nazwanym wolumenie Dockera,
+więc następny start podnosi turniej dokładnie tam, gdzie stanął. Nie uruchamiaj
+`docker compose down -v`, bo `-v` usuwa wolumen z wynikami. Żeby mac nie usnął w połowie pokera,
 sprawdź w ustawieniach, czy nie zasypia przy zasilaniu — kontener padnie razem z nim.
 
 ### Bez Dockera
@@ -95,7 +96,7 @@ SETTEBELLO_PIN=twoj-pin docker compose up -d
 SETTEBELLO_HOST=192.168.1.80 docker compose up -d
 ```
 
-Port zmienisz w `docker-compose.yml` w sekcji `ports` — na przykład `'8080:3048'`
+Port zmienisz w `docker-compose.yml` w sekcji `ports` — na przykład `'8080:3051'`
 wystawi to samo na 8080. Bez Dockera działa `SETTEBELLO_PIN=… PORT=… npm start`.
 
 PIN jest sprawdzany na serwerze, ale to zabezpieczenie na poziomie „nikt z ekipy
@@ -145,10 +146,10 @@ zapisane wyniki do innych osób.
 
 ## Wyniki
 
-W Dockerze baza to `./data/settebello.db` na dysku maca, podmontowana do kontenera.
-Przeżywa restart kontenera, przebudowę obrazu i restart maca. Backup przed turniejem
-to zwykłe skopiowanie katalogu `data/`. Bez Dockera baza siedzi w `settebello.db`
-w katalogu projektu.
+W Dockerze baza to `/data/settebello.db` w nazwanym wolumenie `settebello-data`.
+Przeżywa restart kontenera, przebudowę obrazu i restart hosta. W Portainerze wolumen
+można znaleźć i wyeksportować w sekcji **Volumes**. Bez Dockera baza siedzi
+w `settebello.db` w katalogu projektu.
 
 Wyczyszczenie całego turnieju wymaga wpisania frazy `Chcę wyczyścić` — sprawdzanej
 i w przeglądarce, i na serwerze, żeby nie dało się tego zrobić przez przypadek.
@@ -164,8 +165,8 @@ public/dom.js       flagi zawodników i wspólne klocki interfejsu
 public/views.js     plansze siedmiu dyscyplin
 public/app.js       routing, klasyfikacja, animacja losowania, panel sędziego
 Dockerfile          obraz na Node 24 Alpine, bez instalowania zależności
-docker-compose.yml  port 3048, wolumen na wyniki, restart unless-stopped
-data/               baza wyników przy uruchomieniu w Dockerze
+docker-compose.yml  port 3051, wolumen na wyniki, restart unless-stopped
+wolumen Docker       baza wyników przy uruchomieniu w Dockerze
 ```
 
 Obraz waży ~56 MB i nie ma w nim warstwy `npm install`, bo aplikacja nie ma

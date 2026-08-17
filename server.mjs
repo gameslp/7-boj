@@ -3,7 +3,7 @@
 //
 //   npm start
 //
-// Ekipa wchodzi z telefonów na http://<twoje-ip>:7777 po tym samym WiFi.
+// Ekipa wchodzi z telefonów na http://<twoje-ip>:3051 po tym samym WiFi.
 //
 // Serwer jest jedynym autorytetem: przeglądarka wysyła akcje („gol dla Kate”,
 // „strzał na 9”), silnik z engines.mjs przelicza stan, a wszyscy dostają
@@ -31,7 +31,7 @@ import { createState, setParticipants, drawState, applyAction, derive } from './
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC_DIR = path.join(ROOT, 'public');
-const PORT = Number(process.env.PORT ?? 3048);
+const PORT = Number(process.env.PORT ?? 3051);
 const PIN = process.env.SETTEBELLO_PIN ?? 'palio';
 const DB_PATH = process.env.SETTEBELLO_DB ?? path.join(ROOT, 'settebello.db');
 const RESET_PHRASE = 'Chcę wyczyścić';
