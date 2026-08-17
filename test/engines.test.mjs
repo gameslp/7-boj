@@ -80,6 +80,47 @@ console.log('\n── I. Tenis: drabinka na 9 osób ─────────�
   ok('remis w meczu odrzucony');
 }
 
+console.log('\n── I. Tenis: wolny los nie daje punktów za miejsce ───────────');
+{
+  const def = disciplineById('tenis');
+  const p = (i) => ({ k: 'p', i });
+  const w = (m) => ({ k: 'w', m });
+  const l = (m) => ({ k: 'l', m });
+
+  // Dokładny przebieg ze zgłoszonego turnieju. Aga i Pola przegrały 1:7,
+  // ale tylko Aga została losowo skierowana do rundy wstępnej.
+  const state = {
+    participants: ALL,
+    withdrawn: [],
+    phase: 'live',
+    drawnAt: 1,
+    drawCount: 1,
+    finalId: 'm7',
+    thirdId: 'third',
+    matches: [
+      { id: 'm0', round: 0, a: p(0), b: p(7), sa: 7, sb: 1 },
+      { id: 'm1', round: 1, a: p(8), b: w('m0'), sa: 0, sb: 7 },
+      { id: 'm2', round: 1, a: p(4), b: p(6), sa: 7, sb: 0 },
+      { id: 'm3', round: 1, a: p(2), b: p(3), sa: 9, sb: 11 },
+      { id: 'm4', round: 1, a: p(5), b: p(1), sa: 7, sb: 1 },
+      { id: 'm5', round: 2, a: w('m1'), b: w('m2'), sa: 7, sb: 4 },
+      { id: 'm6', round: 2, a: w('m3'), b: w('m4'), sa: 7, sb: 5 },
+      { id: 'm7', round: 3, a: w('m5'), b: w('m6'), sa: 7, sb: 2 },
+      { id: 'third', round: 3, a: l('m5'), b: l('m6'), sa: 2, sb: 7 },
+    ],
+  };
+
+  const done = derive(def, state);
+  assert.equal(done.status, 'done');
+  assert.deepEqual(
+    done.places,
+    [0, 3, 5, 4, 2, 7, 1, 8, 6],
+    'po podium liczy się wynik meczu eliminacyjnego, nie losowa runda startowa',
+  );
+  ok('Aga nie jest ostatnia tylko dlatego, że losowała rundę wstępną');
+  ok('Marcin Z zajmuje 3. miejsce po wygranym meczu o brąz');
+}
+
 console.log('\n── II. Ping pong: dwie grupy z dziewiątki ─────────────────────');
 {
   const def = disciplineById('pingpong');
@@ -226,6 +267,46 @@ console.log('\n── IV. Kosz: +1, +2 i zerowanie ─────────�
     /nie zeruje/,
   );
   ok('bule nie mają zerowania — tylko kosz');
+}
+
+console.log('\n── IV. Kosz: finał i heaty ustalają osobne miejsca ────────');
+{
+  const def = disciplineById('kosz');
+  const log = [];
+  const score = (stage, player, value) => {
+    for (let i = 0; i < value; i += 1) log.push({ stage, player, value: 1 });
+  };
+
+  // Dokładny układ i wyniki ze zgłoszonego turnieju.
+  const state = {
+    participants: ALL,
+    withdrawn: [],
+    phase: 'live',
+    drawnAt: 1,
+    drawCount: 1,
+    straightFinal: false,
+    heats: [
+      [0, 1, 3, 2, 6],
+      [5, 8, 7, 4],
+    ],
+    log,
+  };
+  score(0, 0, 15);
+  score(0, 1, 4);
+  score(0, 3, 2);
+  score(0, 2, 2);
+  score(1, 5, 15);
+  score(1, 8, 12);
+  score(1, 7, 11);
+  score(1, 4, 2);
+  score('final', 5, 21);
+  score('final', 0, 15);
+  score('final', 8, 11);
+
+  const done = derive(def, state);
+  assert.equal(done.status, 'done');
+  assert.deepEqual(done.places, [5, 0, 8, 1, 7, 3, 2, 4, 6]);
+  ok('miejsca 1–4 odpowiadają punktom finału, a 5–9 punktom z heatów');
 }
 
 console.log('\n── IV. Kosz: piątka gra od razu finał ────────────────────────');

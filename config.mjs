@@ -47,7 +47,7 @@ export const DISCIPLINES = [
       'Cały mecz to jeden tie-break do 11 punktów. Przy stanie 10:10 gra się na dwa punkty przewagi.',
       'Serwis zmienia się co 2 punkty, a strony boiska po każdych 6 punktach.',
       'Przegrani półfinaliści grają mecz o 3. miejsce.',
-      'Dalsze miejsca ustala runda, do której ktoś doszedł, a w jej obrębie liczba punktów zdobytych w całym turnieju.',
+      'Miejsca 1–4 ustalają finał i mecz o 3. miejsce. Pozostałych porównuje wynik meczu, w którym odpadli, niezależnie od losowej rundy startowej. Przy identycznym wyniku wyżej jest osoba, która przegrała z przeciwnikiem dochodzącym dalej.',
     ],
   },
   {
