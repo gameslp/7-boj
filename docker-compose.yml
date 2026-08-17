@@ -1,0 +1,22 @@
+# Settebello — 7-bój w Toskanii.
+#
+#   docker compose up -d --build
+#
+# Potem wejdź na http://localhost:3048, a ekipie podaj http://<IP-twojego-maca>:3048.
+
+services:
+  settebello:
+    build: .
+    image: settebello
+    container_name: settebello
+    restart: unless-stopped
+    ports:
+      - '3048:3048'
+    environment:
+      # PIN sędziego. Zmień przed turniejem: SETTEBELLO_PIN=twoj-pin docker compose up -d
+      SETTEBELLO_PIN: ${SETTEBELLO_PIN:-palio}
+      # Opcjonalnie: adres, który serwer wypisze w logu jako adres dla ekipy.
+      SETTEBELLO_HOST: ${SETTEBELLO_HOST:-}
+    volumes:
+      # Baza wyników zostaje na dysku maca, więc przeżywa restart kontenera.
+      - ./data:/data

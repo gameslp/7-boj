@@ -1,0 +1,14 @@
+{
+  "name": "settebello",
+  "version": "1.0.0",
+  "description": "Settebello — 7-bój w Toskanii. Serwer wyników z panelem sędziego.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning server.mjs",
+    "test": "node --disable-warning=ExperimentalWarning test/engines.test.mjs"
+  },
+  "engines": {
+    "node": ">=22.5"
+  }
+}

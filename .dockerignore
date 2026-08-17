@@ -1,0 +1,13 @@
+.git
+.gitignore
+.claude
+node_modules
+test
+data
+settebello.db
+settebello.db-wal
+settebello.db-shm
+Dockerfile
+.dockerignore
+docker-compose.yml
+README.md

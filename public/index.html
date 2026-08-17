@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Settebello · 7-bój w Toskanii</title>
+    <meta name="description" content="Klasyfikacja, zasady i żywe plansze siedmiu dyscyplin 7-boju w Toskanii." />
+    <meta name="theme-color" content="#223528" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#16170f" media="(prefers-color-scheme: dark)" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%23223528'/%3E%3Ctext x='16' y='24' font-family='Georgia,serif' font-size='22' font-weight='700' text-anchor='middle' fill='%23d9b45e'%3E7%3C/text%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <div class="drappellone" id="drappellone" aria-hidden="true"></div>
+
+    <header class="masthead">
+      <div class="wrap masthead__inner">
+        <div>
+          <p class="eyebrow">Toskania · siedem odsłon · dziewięcioro zawodników</p>
+          <h1><a class="plain-link" href="#/">Settebello</a></h1>
+          <p class="masthead__sub">
+            Siedmiobój na wzór Palio. Każdy ma swoją flagę, a punkty z siedmiu dyscyplin
+            składają się na jedną klasyfikację — liczoną na bieżąco.
+          </p>
+        </div>
+        <div class="masthead__meta">
+          <span class="pill" id="live-pill" data-live="off">
+            <span class="dot"></span><span id="live-label">łączę…</span>
+          </span>
+          <span class="pill"><span id="progress-label">Rozegrane 0 z 7</span></span>
+          <span class="pill pill--admin" id="admin-flag" hidden>sędzia</span>
+        </div>
+      </div>
+    </header>
+
+    <nav class="nav" aria-label="Sekcje">
+      <div class="wrap nav__inner">
+        <button class="tab" type="button" data-view="klasyfikacja" aria-selected="true">Klasyfikacja</button>
+        <button class="tab" type="button" data-view="dyscypliny" aria-selected="false">Dyscypliny</button>
+        <button class="tab" type="button" data-view="zasady" aria-selected="false">Zasady</button>
+      </div>
+    </nav>
+
+    <main id="main-slot">
+      <noscript>
+        <div class="wrap">
+          <p class="empty">
+            <strong>Włącz JavaScript</strong>
+            Strona pobiera rozgrywkę na żywo z serwera i bez JS nie ma czego pokazać.
+          </p>
+        </div>
+      </noscript>
+    </main>
+
+    <footer class="foot">
+      <div class="wrap foot__inner">
+        <span>Settebello · 7-bój w Toskanii · <span id="foot-year"></span></span>
+        <a class="plain-link" href="#/sedzia">Panel sędziego</a>
+      </div>
+    </footer>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>
