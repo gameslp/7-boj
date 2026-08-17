@@ -460,6 +460,13 @@ function participantsPanel(def, outcome) {
   );
 }
 
+/** Faktyczne miejsce i punkty, z uwzględnieniem wspólnego miejsca po finale. */
+function placementAward(outcome, slot) {
+  const shared = Number.isInteger(outcome.sharedFrom) && slot >= outcome.sharedFrom;
+  const place = shared ? outcome.sharedFrom + 1 : slot + 1;
+  return { place, points: app.config.scale[place - 1] ?? 0, shared };
+}
+
 /** Bieżąca kolejność w tej dyscyplinie i punkty, które z niej lecą. */
 function rankingPanel(def, outcome) {
   if (outcome.board.kind === 'teams') {
@@ -504,15 +511,19 @@ function rankingPanel(def, outcome) {
     el(
       'ol',
       { class: 'rank-list' },
-      ...outcome.places.map((player, slot) =>
-        el(
+      ...outcome.places.map((player, slot) => {
+        const award = placementAward(outcome, slot);
+        return el(
           'li',
           { class: 'rank-list__item' },
-          el('span', { class: 'num rank-list__place', text: `${slot + 1}.` }),
+          el('span', {
+            class: 'num rank-list__place',
+            text: `${award.shared ? '=' : ''}${award.place}.`,
+          }),
           who(player),
-          el('span', { class: 'num rank-list__pts', text: `${app.config.scale[slot] ?? 0} pkt` }),
-        ),
-      ),
+          el('span', { class: 'num rank-list__pts', text: `${award.points} pkt` }),
+        );
+      }),
       ...outcome.withdrawn.map((player) =>
         el(
           'li',
@@ -606,7 +617,7 @@ function rulesView() {
   return el(
     'div',
     { class: 'stack' },
-    el('div', {}, sectionHead('Punktacja', 'Ta sama skala w każdej dyscyplinie'), scale),
+    el('div', {}, sectionHead('Punktacja', 'Pełna skala i wspólne 5. miejsce po eliminacjach'), scale),
     el(
       'div',
       {},

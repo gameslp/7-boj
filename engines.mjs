@@ -4,7 +4,7 @@
 // Wspólny kontrakt:
 //   createState(def, participants)  → świeży stan dyscypliny
 //   applyAction(def, state, action) → nowy stan (rzuca Error przy niepoprawnej akcji)
-//   derive(def, state)              → { status, provisional, places, withdrawn, teamPoints, board }
+//   derive(def, state)              → { status, provisional, places, sharedFrom, withdrawn, teamPoints, board }
 //
 // `places` to zawsze pełna kolejność startujących — dopóki dyscyplina trwa, jest to
 // najlepsze przybliżenie (provisional: true), więc klasyfikacja generalna żyje na bieżąco.
@@ -191,40 +191,6 @@ function roundReached(state, playerIndex) {
   return best;
 }
 
-/** Wynik meczu, w którym zawodnik odpadł z drabinki. Każdy poza zwycięzcą ma jeden. */
-function eliminationResult(state, playerIndex) {
-  for (const match of state.matches) {
-    if (match.id === state.thirdId || !decided(match)) continue;
-    const a = resolveSlot(state, match.a);
-    const b = resolveSlot(state, match.b);
-    if (a !== playerIndex && b !== playerIndex) continue;
-    if (bracketWinner(state, match.id) === playerIndex) continue;
-    return {
-      scored: a === playerIndex ? match.sa : match.sb,
-      conceded: a === playerIndex ? match.sb : match.sa,
-      opponent: bracketWinner(state, match.id),
-    };
-  }
-  return null;
-}
-
-/**
- * Poza pierwszą czwórką runda nie może rozstrzygać miejsca: przy niepełnej
- * drabince zależy ona od losowego wolnego losu. Porównujemy więc mecz eliminacyjny,
- * a przy identycznym wyniku premiujemy grę z przeciwnikiem, który zaszedł dalej.
- */
-function eliminationKeys(state, playerIndex) {
-  const loss = eliminationResult(state, playerIndex);
-  if (!loss) return [-1, -Infinity, -1, -1, -playerIndex];
-  return [
-    loss.scored,
-    loss.scored - loss.conceded,
-    roundReached(state, loss.opponent),
-    gamesWon(state, loss.opponent),
-    -playerIndex,
-  ];
-}
-
 function deriveBracket(def, state) {
   const { participants } = state;
   const final = state.finalId ? matchById(state, state.finalId) : null;
@@ -243,16 +209,14 @@ function deriveBracket(def, state) {
 
   const rest = participants
     .filter((i) => !podium.includes(i))
-    .sort(
-      byKeys((i) =>
-        done ? eliminationKeys(state, i) : [roundReached(state, i), gamesWon(state, i)],
-      ),
-    );
+    .sort(byKeys((i) => [roundReached(state, i), gamesWon(state, i)]));
 
   return {
     status: done ? 'done' : playable.some(decided) ? 'live' : 'ready',
     provisional: !done,
     places: [...podium, ...rest],
+    // Finał i mecz o brąz rozstrzygają czwórkę. Reszta dzieli 5. miejsce.
+    sharedFrom: 4,
     board: {
       kind: 'bracket',
       thirdId: state.thirdId,
@@ -397,6 +361,7 @@ function deriveGroups(def, state) {
       status: allGroupsDone ? 'done' : anyPlayed ? 'live' : 'ready',
       provisional: !allGroupsDone,
       places: tables[0].map((r) => r.player),
+      sharedFrom: null,
       board: { kind: 'groups', tables, matches: state.matches, playoff: [], single: true },
     };
   }
@@ -437,6 +402,8 @@ function deriveGroups(def, state) {
     status: done ? 'done' : anyPlayed ? 'live' : 'ready',
     provisional: !done,
     places: [...podium, ...orderedRest],
+    // Po fazie grupowej tylko puchar rozstrzyga miejsca 1–4.
+    sharedFrom: 4,
     board: {
       kind: 'groups',
       tables,
@@ -681,6 +648,9 @@ function deriveHeats(def, state) {
     status: done ? 'done' : state.log.length > 0 ? 'live' : 'ready',
     provisional: !done,
     places,
+    // Przy grze bez heatów znamy pełną kolejność. W przeciwnym razie
+    // finał ustala czwórkę, a pozostali dzielą 5. miejsce.
+    sharedFrom: state.straightFinal ? null : 4,
     board: {
       kind: 'heats',
       straightFinal: state.straightFinal,

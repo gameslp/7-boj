@@ -16,15 +16,15 @@ export const PLAYERS = [
   { name: 'Maja',     mono: 'MJ', c1: '#1F6F72', c2: '#EFEADA' },
 ];
 
-// Punkty za miejsca 1–9. Skala jest przypisana do miejsca, nie do liczby startujących:
-// pierwsze miejsce zawsze daje 12 punktów, również gdy w dyscyplinie startuje pięć osób.
+// Pełna skala za miejsca 1–9. Dyscypliny z eliminacjami mogą zakończyć
+// klasyfikację na wspólnym 5. miejscu; wtedy każda z tych osób dostaje SCALE[4].
 export const SCALE = [12, 10, 8, 6, 5, 4, 3, 2, 1];
 
 // Water polo jest drużynowe, więc ma własną punktację.
 export const WP_POINTS = { win: 9, draw: 6, loss: 3, mvp: 2 };
 
 export const GENERAL_RULES = [
-  'W każdej dyscyplinie miejsca dają punkty: 12 – 10 – 8 – 6 – 5 – 4 – 3 – 2 – 1. Skala jest ta sama wszędzie, więc żadna dyscyplina nie waży więcej od innych.',
+  'Pełna skala miejsc to 12 – 10 – 8 – 6 – 5 – 4 – 3 – 2 – 1. W tenisie, ping-pongu, koszu i bulach finał rozstrzyga miejsca 1–4, a wszyscy pozostali dzielą 5. miejsce i dostają po 5 punktów.',
   'Z każdej dyscypliny można zrezygnować i nikt nie musi się tłumaczyć. Rezygnacja oznacza zero punktów z tej dyscypliny — bez wyrównywania i bez przeliczania skali dla tych, którzy zostali.',
   'Punkty są przypisane do miejsca, nie do liczby startujących. Kto wygrywa dyscyplinę, w której gra pięć osób, dostaje te same 12 punktów co zwycięzca pełnej dziewiątki.',
   'Przed każdą dyscypliną losujemy od nowa: grupy, heaty, drabinki i kolejność strzałów. Ten sam pech nie ciągnie się przez cały turniej.',
@@ -47,7 +47,7 @@ export const DISCIPLINES = [
       'Cały mecz to jeden tie-break do 11 punktów. Przy stanie 10:10 gra się na dwa punkty przewagi.',
       'Serwis zmienia się co 2 punkty, a strony boiska po każdych 6 punktach.',
       'Przegrani półfinaliści grają mecz o 3. miejsce.',
-      'Miejsca 1–4 ustalają finał i mecz o 3. miejsce. Pozostałych porównuje wynik meczu, w którym odpadli, niezależnie od losowej rundy startowej. Przy identycznym wyniku wyżej jest osoba, która przegrała z przeciwnikiem dochodzącym dalej.',
+      'Miejsca 1–4 ustalają finał i mecz o 3. miejsce. Wszyscy pozostali dzielą 5. miejsce i dostają po 5 punktów, więc losowa runda startowa nie wpływa na punktację.',
     ],
   },
   {
@@ -63,6 +63,7 @@ export const DISCIPLINES = [
       'Po dwie najlepsze osoby z grupy wychodzą do półfinałów na krzyż: pierwszy z grupy A gra z drugim z grupy B i odwrotnie.',
       'Półfinały, finał i mecz o 3. miejsce rozgrywamy do dwóch wygranych setów — wpisujemy wynik decydującego seta.',
       'W grupie kolejność ustala liczba zwycięstw, potem różnica małych punktów, potem punkty zdobyte.',
+      'Przy dwóch grupach puchar ustala miejsca 1–4, a pozostali dzielą 5. miejsce i dostają po 5 punktów.',
       'Jeśli startuje pięć osób albo mniej, grają jedną grupą każdy z każdym i to od razu ustala miejsca.',
     ],
   },
@@ -99,8 +100,8 @@ export const DISCIPLINES = [
       'Nie ma wolnej piłki. Zbiera zawsze następna osoba w wylosowanej kolejności i z tego miejsca rzuca.',
       'Kto nie trafi ani w kosz, ani w tablicę, traci wszystkie swoje punkty i wraca do zera.',
       'Jeśli piłki dotknie ktoś, kto nie jest w tym momencie w kolejności, osoba która miała zbierać rzuca z miejsca dotknięcia albo z miejsca, w którym sama zebrała — jak jej wygodniej.',
-      'Finał: po dwie najlepsze osoby z każdego heatu grają do 21 punktów. To rozstrzyga czołowe miejsca.',
-      'Dalsze miejsca ustala liczba punktów zdobytych w heacie.',
+      'Finał: po dwie najlepsze osoby z każdego heatu grają do 21 punktów. To rozstrzyga miejsca 1–4.',
+      'Pozostali dzielą 5. miejsce i dostają po 5 punktów — wynik heatu służy tylko do awansu.',
     ],
   },
   {
@@ -115,8 +116,8 @@ export const DISCIPLINES = [
       'Heaty po 4 osoby (losowanie), każdy sam za siebie, gra do 7 punktów.',
       'Punkt zdobywa bula najbliższa cochonneta po wyrzuceniu wszystkich bul w rundzie. Za dwie i trzy bule bliżej niż wszystkie cudze liczymy odpowiednio 2 i 3 punkty.',
       'Wybijanie bul przeciwników jest jak najbardziej w porządku.',
-      'Finał: po dwie najlepsze osoby z każdego heatu grają do 5 punktów.',
-      'Dalsze miejsca ustala liczba punktów z heatu. Przy remisie jeden rzut na celność — kto bliżej cochonneta.',
+      'Finał: po dwie najlepsze osoby z każdego heatu grają do 5 punktów i ustalają miejsca 1–4.',
+      'Pozostali dzielą 5. miejsce i dostają po 5 punktów — wynik heatu służy tylko do awansu.',
     ],
   },
   {
@@ -162,10 +163,17 @@ export function disciplineById(id) {
   return DISCIPLINES.find((d) => d.id === id) ?? null;
 }
 
+/** Faktyczne miejsce i punkty, z uwzględnieniem wspólnego miejsca po finale. */
+export function placementAward(result, slot) {
+  const shared = Number.isInteger(result.sharedFrom) && slot >= result.sharedFrom;
+  const place = shared ? result.sharedFrom + 1 : slot + 1;
+  return { place, points: SCALE[place - 1] ?? 0 };
+}
+
 /**
  * Klasyfikacja generalna z gotowych miejsc w dyscyplinach.
  *
- * placements: { [disciplineId]: { places: number[], withdrawn: number[], teamPoints?: {playerIndex: pkt} } }
+ * placements: { [disciplineId]: { places: number[], sharedFrom?: number, withdrawn: number[], teamPoints?: {playerIndex: pkt} } }
  *   places      — indeksy zawodników w kolejności od 1. miejsca; miejsca jeszcze nieustalone pomijamy
  *   withdrawn   — kto zrezygnował (0 punktów, bez miejsca)
  *   teamPoints  — dyscypliny drużynowe podają punkty wprost, bez miejsc
@@ -200,10 +208,11 @@ export function computeStandings(placements) {
 
     (result.places ?? []).forEach((playerIndex, slot) => {
       const row = rows[playerIndex];
-      row.points[def.id] = SCALE[slot] ?? 0;
-      row.places[def.id] = slot + 1;
-      if (slot === 0) row.firsts += 1;
-      if (slot === 1) row.seconds += 1;
+      const award = placementAward(result, slot);
+      row.points[def.id] = award.points;
+      row.places[def.id] = award.place;
+      if (award.place === 1) row.firsts += 1;
+      if (award.place === 2) row.seconds += 1;
     });
   }
 

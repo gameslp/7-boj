@@ -112,12 +112,15 @@ console.log('\n── I. Tenis: wolny los nie daje punktów za miejsce ───
 
   const done = derive(def, state);
   assert.equal(done.status, 'done');
-  assert.deepEqual(
-    done.places,
-    [0, 3, 5, 4, 2, 7, 1, 8, 6],
-    'po podium liczy się wynik meczu eliminacyjnego, nie losowa runda startowa',
-  );
-  ok('Aga nie jest ostatnia tylko dlatego, że losowała rundę wstępną');
+  assert.deepEqual(done.places.slice(0, 4), [0, 3, 5, 4]);
+  assert.equal(done.sharedFrom, 4);
+  const standings = computeStandings({ tenis: done });
+  for (const player of [1, 2, 6, 7, 8]) {
+    const row = standings.find((r) => r.index === player);
+    assert.equal(row.places.tenis, 5);
+    assert.equal(row.points.tenis, 5);
+  }
+  ok('wszyscy poza finałową czwórką dzielą 5. miejsce i dostają po 5 pkt');
   ok('Marcin Z zajmuje 3. miejsce po wygranym meczu o brąz');
 }
 
@@ -135,7 +138,15 @@ console.log('\n── II. Ping pong: dwie grupy z dziewiątki ──────
   const done = derive(def, state);
   assert.equal(done.status, 'done');
   assert.equal(new Set(done.places).size, 9);
+  assert.equal(done.sharedFrom, 4);
+  const standings = computeStandings({ pingpong: done });
+  for (const player of done.places.slice(4)) {
+    const row = standings.find((r) => r.index === player);
+    assert.equal(row.places.pingpong, 5);
+    assert.equal(row.points.pingpong, 5);
+  }
   ok(`rozstrzygnięte: ${names(done.places.slice(0, 4))} …`);
+  ok('po pucharze pozostali dzielą 5. miejsce');
 }
 
 console.log('\n── II. Ping pong: piątka gra jedną grupą ──────────────────────');
@@ -149,6 +160,7 @@ console.log('\n── II. Ping pong: piątka gra jedną grupą ─────�
   const done = derive(def, state);
   assert.equal(done.status, 'done');
   assert.equal(done.places.length, 5);
+  assert.equal(done.sharedFrom, null, 'jedna grupa ustala pełną kolejność');
   assert.deepEqual(done.withdrawn.sort((a, b) => a - b), [3, 5, 6, 7]);
   ok('jedna grupa, 4 osoby na rezygnacji poza klasyfikacją miejsc');
 }
@@ -306,7 +318,14 @@ console.log('\n── IV. Kosz: finał i heaty ustalają osobne miejsca ──�
   const done = derive(def, state);
   assert.equal(done.status, 'done');
   assert.deepEqual(done.places, [5, 0, 8, 1, 7, 3, 2, 4, 6]);
-  ok('miejsca 1–4 odpowiadają punktom finału, a 5–9 punktom z heatów');
+  assert.equal(done.sharedFrom, 4);
+  const standings = computeStandings({ kosz: done });
+  for (const player of done.places.slice(4)) {
+    const row = standings.find((r) => r.index === player);
+    assert.equal(row.places.kosz, 5);
+    assert.equal(row.points.kosz, 5);
+  }
+  ok('finał ustala miejsca 1–4, a pozostali dzielą 5. miejsce po 5 pkt');
 }
 
 console.log('\n── IV. Kosz: piątka gra od razu finał ────────────────────────');
@@ -315,6 +334,7 @@ console.log('\n── IV. Kosz: piątka gra od razu finał ───────
   const state = begin(def, [0, 1, 2, 3, 4]);
   const out = derive(def, state);
   assert.equal(out.board.straightFinal, true);
+  assert.equal(out.sharedFrom, null);
   assert.equal(out.board.stage, 'final');
   assert.equal(out.board.target, 21);
   ok('do pięciu osób nie ma heatów, od razu jedna gra do 21');
@@ -325,6 +345,7 @@ console.log('\n── V. Bule: własne wartości punktowe ───────�
   const def = disciplineById('bule');
   const state = begin(def, ALL);
   const out = derive(def, state);
+  assert.equal(out.sharedFrom, 4);
   assert.deepEqual(out.board.values, [1, 2, 3]);
   assert.equal(out.board.target, 7);
   const next = applyAction(def, state, { type: 'point', player: out.board.field[0], value: 3 });
@@ -359,6 +380,7 @@ console.log('\n── VI. Water polo: 5 na 4 z golami i MVP ──────�
   assert.equal(done.teamPoints[0], 9, 'zwycięzca 9 punktów');
   assert.equal(done.teamPoints[6], 3, 'przegrany 3 punkty');
   assert.equal(done.teamPoints[5], 5, 'przegrany z MVP: 3 + 2');
+  assert.ok(Math.max(...Object.values(done.teamPoints)) <= 12, 'water polo nie przebija 12 pkt za wygraną indywidualną');
   ok(`2:1 dla A, MVP z przegranej drużyny dostaje 3+2=${done.teamPoints[5]}`);
 
   const undone = applyAction(def, applyAction(def, state, { type: 'unfinish' }), { type: 'undoGoal' });
@@ -384,7 +406,11 @@ console.log('\n── VII. Poker: kolejność wypadania ────────
   state = applyAction(def, state, { type: 'bust', player: nearlyDone.board.remaining[1] });
   const done = derive(def, state);
   assert.equal(done.status, 'done');
+  assert.equal(done.sharedFrom, undefined, 'poker zachowuje pełną kolejność');
   assert.equal(done.places.at(-1), 3, 'kto wypadł pierwszy, ten ostatni');
+  const standings = computeStandings({ poker: done });
+  assert.equal(standings.find((r) => r.index === done.places[0]).points.poker, 12);
+  assert.equal(standings.find((r) => r.index === done.places[8]).points.poker, 1);
   ok(`zwycięzca: ${PLAYERS[done.places[0]].name}, ostatni: ${PLAYERS[done.places.at(-1)].name}`);
 
   assert.throws(() => applyAction(def, state, { type: 'bust', player: done.places[0] }), /rozstrzygnięty/);

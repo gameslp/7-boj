@@ -105,11 +105,18 @@ dla siebie i nie wystawiaj serwera do internetu.
 
 ## Punktacja
 
-Ta sama skala w każdej dyscyplinie:
+Pełna skala miejsc:
 
 | Miejsce | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |
 |---|---|---|---|---|---|---|---|---|---|
 | Punkty | 12 | 10 | 8 | 6 | 5 | 4 | 3 | 2 | 1 |
+
+W **łuku i pokerze** znamy pełną kolejność, więc obowiązuje cała skala.
+W **tenisie, ping-pongu, koszu i bulach** finał rozstrzyga miejsca 1–4, a wszyscy
+pozostali dzielą 5. miejsce i dostają po 5 punktów. Wynik eliminacji decyduje
+o awansie, ale nie tworzy sztucznej kolejności zależnej od losowania grup lub drabinki.
+Jeśli ping-pong, kosz albo bule są rozgrywane bez eliminacji w jednej grupie lub finale,
+bezpośredni wynik ustala pełną kolejność i wraca pełna skala.
 
 Water polo jest drużynowe, więc liczy się inaczej: wygrana 9 punktów dla każdego,
 przegrana 3, remis 6, MVP dodatkowo +2.
